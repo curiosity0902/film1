@@ -1,0 +1,47 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_films/database/user_service/model.dart';
+
+class AuthService {
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+ Future <UserModel?> singIn(BuildContext context, String email, String password)async {
+  try { 
+    showDialog(
+                              context: context, 
+                              builder: (context) {
+                            return const Center(child: CircularProgressIndicator());
+                        }                        
+                        );
+    UserCredential userCredential = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+    User user = userCredential.user!;
+    Navigator.pop(context);
+    return UserModel.fromFireBase(user);
+  } catch (e){
+     Navigator.pop(context);
+    return null;
+  }
+ }
+
+  Future <UserModel?> singUp(String email, String password)async {
+  try { 
+    UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+    User user = userCredential.user!;
+    return UserModel.fromFireBase(user);
+  } catch (e){
+    return null;
+  }
+ }
+
+ Future logOut() async{
+  try {
+    await _firebaseAuth.signOut();
+  } catch (e) {
+    return null;
+  }
+ }
+  Stream<UserModel?> get currentUser{
+    return _firebaseAuth.authStateChanges().map((user) => user!= null? UserModel.fromFireBase(user): null);
+  }
+
+}
